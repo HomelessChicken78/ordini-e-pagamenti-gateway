@@ -10,7 +10,7 @@
     </parent>
     <groupId>it.itsacademy</groupId>
     <artifactId>ordini-e-pagamenti-gateway</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>ordini-e-pagamenti-gateway</name>
     <description>ordini-e-pagamenti-gateway</description>
     <url/>
