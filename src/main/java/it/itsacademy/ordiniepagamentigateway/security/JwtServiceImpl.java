@@ -4,9 +4,11 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.security.Key;
 
+@Service
 public class JwtServiceImpl implements JwtService {
     // Questa variabile ospita la chiave segreta (una stringa di testo apparentemente casuale)
     // definita nel file "application.properties". È la password segreta del server.
