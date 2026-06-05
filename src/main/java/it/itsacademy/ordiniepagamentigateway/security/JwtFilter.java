@@ -1,7 +1,9 @@
 package it.itsacademy.ordiniepagamentigateway.security;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -10,6 +12,8 @@ import reactor.core.publisher.Mono;
 @Component
 @RequiredArgsConstructor
 public class JwtFilter implements WebFilter {
+    private final JwtService jwtService;
+
     /*
      Nella programmazione tradizionale, un metodo "blocca" il server finché non ha un
      risultato da restituire (es. "Utente"). In WebFlux (che è reattivo), non si blocca mai nulla.
@@ -26,6 +30,8 @@ public class JwtFilter implements WebFilter {
      */
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        String jwt = estraiTokenDallaExchange(exchange);
+
         // Passiamo la richiesta al filtro successivo.
         // Dobbiamo ritornare il suo risultato invece di chiamarlo e basta perchè in WebFlux,
         // chiamare un metodo non esegue il codice, ma si limita a creare un oggetto (il Mono)
@@ -38,5 +44,28 @@ public class JwtFilter implements WebFilter {
         // le due istruzioni a filtroA. FiltroA aggiunge un'istruzione (printa "1") e ritorna le azioni a spring.
         // Spring legge il Mono finale che contiene tutte e tre le istruzioni e le esegue
         return chain.filter(exchange);
+    }
+
+    // Metodo che estrae il token dalla richiesta http, ignorando il resto
+    private String estraiTokenDallaExchange(ServerWebExchange exchange) {
+        // L'oggetto exchange contiene sia la request che la response.
+        // La request di web flux è più complessa. Dobbiamo accedere a tutti gli oggetti e cercare il primo
+        // "Authorization"
+        String headerAuth = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+
+        // StringUtils.hasText controlla che l'header esista e non sia vuoto.
+        // Il metodo "startsWith" delle stringhe controlla invece che inizia con "Bearer ".
+        // Esistono vari metodi per autenticarsi sul web (es. "Basic" per le password classiche).
+        // La parola "Bearer " indica che a seguire sarà indicato chi è il portatore del token.
+        // La stringa headerAuth è dunque "Bearer 324uiyebttbedashj7287b"
+        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
+            // Ci interessa solo sapere 324uiyebttbedashj7287b di headerAuth, non ci interessa di "Bearer ".
+            // Il comando substring(7) ordina a Java di tagliare via i primi 7 caratteri,
+            // ovvero quelli corrispondenti alla parola "Bearer ".
+            return headerAuth.substring(7);
+        }
+
+        // Nel caso le condizioni non si verificano, ritorna null.
+        return null;
     }
 }
