@@ -2,6 +2,8 @@ package it.itsacademy.ordiniepagamentigateway.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
@@ -31,6 +33,21 @@ public class JwtFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String jwt = estraiTokenDallaExchange(exchange);
+
+        // Controlla che il parser non sia fallito e che sia validato
+        if (jwt != null && jwtService.validateToken(jwt)) {
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                    jwtService.extractUsername(jwt),
+                    null
+            );
+
+            // Continua la catena ma con nel contesto di sicurezza metti l'autenticazione
+            // (guarda sotto per la spiegazione di "return chain.filter(exchange);
+            return chain.filter(exchange)
+                    .contextWrite(
+                            ReactiveSecurityContextHolder.withAuthentication(auth)
+                    );
+        }
 
         // Passiamo la richiesta al filtro successivo.
         // Dobbiamo ritornare il suo risultato invece di chiamarlo e basta perchè in WebFlux,
