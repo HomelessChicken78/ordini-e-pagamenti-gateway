@@ -11,6 +11,8 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
+
 @Component
 @RequiredArgsConstructor
 public class JwtFilter implements WebFilter {
@@ -38,7 +40,8 @@ public class JwtFilter implements WebFilter {
         if (jwt != null && jwtService.validateToken(jwt)) {
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     jwtService.extractUsername(jwt),
-                    null
+                    null,
+                    Collections.emptyList()
             );
 
             // Continua la catena ma con nel contesto di sicurezza metti l'autenticazione
