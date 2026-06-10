@@ -8,6 +8,8 @@ spring:
           uri: http://${GESTIONE_ORDINI_HOST:localhost}:${GESTIONE_ORDINI_PORT:8080}
           predicates:
             - Path=/${PATH_ORDINI:ordini}/**
+          filters:
+            - TokenRelay= # Inoltra il token automaticamente come header al microservizio
         - id: gestione-pagamenti
           uri: http://${GESTIONE_PAGAMENTI_HOST:localhost}:${GESTIONE_PAGAMENTI_PORT:8080}
           predicates:
