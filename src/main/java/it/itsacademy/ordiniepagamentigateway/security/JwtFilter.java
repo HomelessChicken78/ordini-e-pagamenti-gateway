@@ -38,6 +38,21 @@ public class JwtFilter implements WebFilter {
 
         // Controlla che il parser non sia fallito e che sia validato
         if (jwt != null && jwtService.validateToken(jwt)) {
+            // Aggiungi un header
+            ServerWebExchange modifiedExchange = exchange.mutate() // Exchange.mutate -> cambia la exchange corrente con una nuova
+                    .request(
+                            // exhange.get.request.mutate cambia la richiesta attuale con un'altra richiesta con
+                            // gli stessi dati ma un header in più
+                            exchange.getRequest()
+                                    .mutate()
+                                    .header(
+                                            "X-Authenticated-User",
+                                            jwtService.extractUsername(jwt)
+                                    )
+                                    .build()
+                    )
+                    .build();
+
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     jwtService.extractUsername(jwt),
                     null,
